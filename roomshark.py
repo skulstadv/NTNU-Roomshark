@@ -74,8 +74,10 @@ def send_reservation(username, password, start_time, room):
     try:
         search_box = driver.find_element_by_id("duration") 
         if (start_time == '8'):
+            search_box.click()
             search_box.send_keys("12")
         else:
+            search_box.click()
             search_box.send_keys("16")
         search_box = driver.find_element_by_id("rb-bestill") 
         search_box.send_keys("\ue006") 
@@ -83,7 +85,6 @@ def send_reservation(username, password, start_time, room):
     except Exception:
         logger.critical("Wrong login or room already booked.")
         return
-
     # Clicked submit, waiting up to 5 seconds for view to change
     element = WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.ID, "name")))
     try:
