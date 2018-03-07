@@ -31,12 +31,15 @@ logger.addHandler(fh)
 logger.addHandler(ch)
 
 # Argument parsing
-parser = argparse.ArgumentParser(description='Automatic room reservation for NTNU', formatter_class=argparse.RawDescriptionHelpFormatter, usage='./roomshark.py user pw room date')
+parser = argparse.ArgumentParser(description='Room reservation for NTNU',
+                                 formatter_class=argparse.RawDescriptionHelpFormatter,
+                                 usage='roomshark.py USERNAME PASSWORD [--starttime {8|12}] [--room roomID]')
 parser.add_argument('username', help='Your feide username')
 parser.add_argument('password', help='Your feide password')
 parser.add_argument('--starttime', default='8',
                     help='Either 8 or 12. Booking will be for starttime + 4 hours')
-parser.add_argument('--room', default='51003.012', help='The id of the room you wish to book')
+parser.add_argument('--room', default='51003.012', help='The id of the room you wish to book.' +
+                    'For S312 use 51003.012 and for S313 use 51003.013')
 parser = parser.parse_args()
 
 
@@ -79,7 +82,7 @@ def send_reservation(username, password, start_time, room):
         search_box.send_keys("\ue006") 
         logger.debug("Clicked submit, waiting view to change")
     except Exception:
-        logger.critical("Room probably already booked")
+        logger.critical("Wrong login or room already booked.")
         return
 
     # Clicked submit, waiting up to 5 seconds for view to change
