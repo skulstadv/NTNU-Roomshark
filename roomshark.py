@@ -15,7 +15,7 @@ from selenium.webdriver.support import expected_conditions as EC
 logger = logging.getLogger('Roomshark')
 logger.setLevel(logging.DEBUG)
 # Create file handler which logs even debug messages
-fh = logging.FileHandler('debug.log')
+fh = logging.FileHandler(str(os.getcwd() + '/debug.log'))
 # Create console handler with a higher log level
 ch = logging.StreamHandler(sys.stdout)
 # Log level information, excludes debug messages
