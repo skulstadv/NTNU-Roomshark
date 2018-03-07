@@ -143,7 +143,7 @@ def main():
     username = parser.__getattribute__('username')
     password = parser.__getattribute__('password')
     cookie = create_cookie(username, password)
-    logger.debug('Successfully created reservation')
+    logger.info('Successfully created reservation')
     # TODO For manual request 
     #logger.debug("Got cookie: "+ cookie)
     #send_reservation(cookie, '2018-03-21', 1)
