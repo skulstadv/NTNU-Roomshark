@@ -67,7 +67,7 @@ def send_reservation(username, password, start_time, room):
         return
 
     # Go directly to the date two weeks from now with the correct starting time
-    date = str(datetime.date.today() + datetime.timedelta(days=14))
+    date = str(datetime.date.today() + datetime.timedelta(days=15))
     url = 'https://tp.uio.no/ntnu/rombestilling/?start=' + start_time + ':00&preset_date=' + date + '&roomid=' + room
     driver.get(url)
 
@@ -76,10 +76,13 @@ def send_reservation(username, password, start_time, room):
         search_box = driver.find_element_by_id("duration") 
         if (start_time == '8'):
             search_box.click()
+            WebDriverWait(driver, 2)
             search_box.send_keys("12")
         else:
             search_box.click()
+            WebDriverWait(driver, 2)
             search_box.send_keys("16")
+        WebDriverWait(driver, 2)
         search_box = driver.find_element_by_id("rb-bestill") 
         search_box.send_keys("\ue006") 
         logger.debug("Clicked submit, waiting view to change")
