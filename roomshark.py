@@ -16,7 +16,7 @@ from selenium.webdriver.support import expected_conditions as EC
 logger = logging.getLogger('Roomshark')
 logger.setLevel(logging.DEBUG)
 # Create file handler which logs even debug messages
-fh = logging.FileHandler(str(os.getcwd() + '/debug.log'))
+fh = logging.FileHandler(str(os.path.dirname(os.path.realpath(__file__)) + '/debug.log'))
 # Create console handler with a higher log level
 ch = logging.StreamHandler(sys.stdout)
 # Log level information, excludes debug messages
@@ -67,7 +67,7 @@ def send_reservation(username, password, start_time, room):
         return
 
     # Go directly to the date two weeks from now with the correct starting time
-    date = str(datetime.date.today() + datetime.timedelta(days=15))
+    date = str(datetime.date.today() + datetime.timedelta(days=14))
     logger.debug("Using date: " + date)
     url = 'https://tp.uio.no/ntnu/rombestilling/?start=' + start_time + ':00&preset_date=' + date + '&roomid=' + room
     driver.get(url)
@@ -88,7 +88,7 @@ def send_reservation(username, password, start_time, room):
         search_box.send_keys("\ue006") 
         logger.debug("Clicked submit, waiting view to change")
     except Exception:
-        logger.critical("Wrong login or room already booked.")
+        logger.exception("Wrong login or room already booked.")
         return
     # Clicked submit, waiting up to 5 seconds for view to change
     element = WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.ID, "name")))
