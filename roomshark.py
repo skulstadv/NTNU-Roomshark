@@ -3,7 +3,6 @@ import sys
 import time
 import logging
 import argparse
-import requests
 import datetime
 from pyvirtualdisplay import Display
 from selenium import webdriver

@@ -1,3 +1,2 @@
-requests==2.18.1
-PyVirtualDisplay==0.2.1
 selenium==3.10.0
+PyVirtualDisplay==0.2.1
