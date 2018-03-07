@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 import sys
 import time
 import logging
@@ -35,119 +34,73 @@ logger.addHandler(ch)
 parser = argparse.ArgumentParser(description='Automatic room reservation for NTNU', formatter_class=argparse.RawDescriptionHelpFormatter, usage='./roomshark.py user pw room date')
 parser.add_argument('username', help='Your feide username')
 parser.add_argument('password', help='Your feide password')
-parser.add_argument('Room ID', help='The id of the room you wish to book')
-parser.add_argument('Time', help='The date and time of the reservation on format: TODO')
-parser.add_argument('-t', metavar='--test', help='Test order placement only')
-parser.add_argument('-g', metavar='--graph', help='Show price spread graph')
+parser.add_argument('--starttime', default='8',
+                    help='Either 8 or 12. Booking will be for starttime + 4 hours')
+parser.add_argument('--room', default='51003.012', help='The id of the room you wish to book')
 parser = parser.parse_args()
 
 
-# Lets create a cookie to use for the reservation using selenium with chrome
-def create_cookie(username, password):
+# Log in to feide and send reservation
+# @param start_time should be either 8 or 12
+# @param room should be '51003.012' or '51003.013'
+def send_reservation(username, password, start_time, room):
     # Using virtualdisplay, will be running on server with no window manager 
+    logger.debug("Starting chromedriver")
     display = Display(visible=0, size=(800,600))
     display.start()
     driver = webdriver.Chrome("/usr/lib/chromium-browser/chromedriver")
-    logger.debug("Creating headless chromium")
     driver.get("https://idp.feide.no/simplesaml/module.php/feide/login.php?asLen=241&AuthState=_4b555877341923271e48c51b9f56db91a63873a9a8%3Ahttps%3A%2F%2Fidp.feide.no%2Fsimplesaml%2Fsaml2%2Fidp%2FSSOService.php%3Fspentityid%3Dhttps%253A%252F%252Flogin.paas2.uninett.no%252Ffeide-feide-kp%252Fmetadata%26cookieTime%3D1520351802%26RelayState%3Dhttps%253A%252F%252Fkunde.feide.no%252F") 
-    search_box = driver.find_element_by_id("org_selector-selectized") 
+    logger.debug("Logging in to feide")
     try:
+        search_box = driver.find_element_by_id("org_selector-selectized") 
         search_box.send_keys("NTNU\ue006") 
+        search_box = driver.find_element_by_id("username") 
+        search_box.send_keys(username) 
+        search_box = driver.find_element_by_id("password") 
+        search_box.send_keys(password) 
+        search_box.submit() 
     except Exception:
-        logger.debug("Selenium couldn't find object")
-        return 0
-    search_box = driver.find_element_by_id("username") 
-    search_box.send_keys(username) 
-    search_box = driver.find_element_by_id("password") 
-    search_box.send_keys(password) 
-    search_box.submit() 
-    logger.debug("Sent cookie request")
-    all_cookies = driver.get_cookies() 
-    cookies_dict = {}
+        logger.exception("Couldnt select NTNU when logging in to feide")
+        return
 
-    # TODO All related to manual POST. Not currently working.
-    # Make cookies into dict format to parse
-    for cookie in all_cookies:
-            cookies_dict[cookie['name']] = cookie['value']
-    cookie = cookies_dict['SimpleSAMLSessionID']
-    logger.debug(cookie)
+    # Go directly to the date two weeks from now with the correct starting time
+    date = str(datetime.date.today() + datetime.timedelta(days=14))
+    url = 'https://tp.uio.no/ntnu/rombestilling/?start=' + start_time + ':00&preset_date=' + date + '&roomid=' + room
+    driver.get(url)
 
-    # Request website from right domain to get our PHPSESSID cookie
-    driver.get("https://tp.uio.no/ntnu/rombestilling/?start=8:00&preset_date=2018-03-21&roomid=51003.012")
-    all_cookies = driver.get_cookies() 
-    cookies_dict = {}
-    # Make cookies into dict format to parse
-    for cookie in all_cookies:
-            cookies_dict[cookie['name']] = cookie['value']
+    # Find the element which decides end time
+    try:
+        search_box = driver.find_element_by_id("duration") 
+        if (start_time == '8'):
+            search_box.send_keys("12")
+        else:
+            search_box.send_keys("16")
+        search_box = driver.find_element_by_id("rb-bestill") 
+        search_box.send_keys("\ue006") 
+        logger.debug("Clicked submit, waiting view to change")
+    except Exception:
+        logger.critical("Room probably already booked")
+        return
 
-    # Returning correct cookie now
-    cookie = cookies_dict['PHPSESSID']
-    logger.debug(cookie)
-
-    search_box = driver.find_element_by_id("duration") 
-    search_box.send_keys("12") 
-    search_box = driver.find_element_by_id("rb-bestill") 
-    search_box.send_keys("\ue006") 
-    logger.debug("Sending submit and waiting up to 5sec for page to load")
-    # Wait for element to be loaded
+    # Clicked submit, waiting up to 5 seconds for view to change
     element = WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.ID, "name")))
     try:
         element.send_keys("\ue004\ue004\ue004\ue006") 
         logger.debug("Sending confirmation")
+    except Exception:
+        logger.exception("Selenium couldnt find confirmation button")
     finally:
+        logger.info('Successfully created reservation')
         driver.quit() 
-        return cookie
-
-
-# TODO For sending reservation through curl in case of competition. NOT CURRENTLY WORKING.
-# Send the reservation with cookie
-def send_reservation(cookie, date, first):
-    url = 'https://tp.uio.no/ntnu/rombestilling/?start=8:00&preset_date=2018-03-21&roomid=51003.012'
-    # Only split day into two, from 8 and from 12
-    time = '08%3A00'
-    if not first:
-        # Second reservation today, booking from 12-16
-        time = '12%3A00'
-    date = datetime.date.today() + datetime.timedelta(days=13)
-    logger.info("Date: " + str(date))
-    data = {
-        'name':'',
-        'notes':'',
-        'confirmed':'true',
-        'start':time,
-        'size':'5',
-        'roomtype':'GRUPPE',
-        'duration':'04%3A00',
-        'area':'50000',
-        'room%5B%5D':'51003.012',
-        'building':'510',
-        'preset_day':'WED',
-        'preset_date':'2018-03-21', #Wrong form, make this an argument
-        'exam':'',
-        'dates%5B%5D':'2018-03-21',
-        'tokenrb':'1337'
-    }
-
-    # Include cookie in headers along with user agent (dont want the website to think we are a bot)
-    headers = {'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.100 Safari/537.36' , 'cookie':  'PHPSESSID=' + cookie}
-
-    r = requests.post(url = url2, headers = headers, data = data)
-    answer = r.text.encode('UTF-8')
-    logger.debug(answer)
-    logger.debug(headers)
-    logger.debug(data)
 
 
 def main():
-    logger.debug('Starting')
+    # Get arguments
     username = parser.__getattribute__('username')
     password = parser.__getattribute__('password')
-    cookie = create_cookie(username, password)
-    logger.info('Successfully created reservation')
-    # TODO For manual request 
-    #logger.debug("Got cookie: "+ cookie)
-    #send_reservation(cookie, '2018-03-21', 1)
-    #logger.debug("Sent reservation")
+    start_time = parser.__getattribute__('starttime')
+    room = parser.__getattribute__('room')
+    send_reservation(username, password, start_time, room)
 
 
 if __name__ == "__main__":
