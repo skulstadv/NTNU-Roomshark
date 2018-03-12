@@ -22,7 +22,8 @@ fh = logging.FileHandler(str(os.path.dirname(os.path.realpath(__file__)) + '/deb
 ch = logging.StreamHandler(sys.stdout)
 # Log level information, excludes debug messages
 # TODO Change to info when done debugging
-ch.setLevel(logging.INFO)
+ch.setLevel(logging.DEBUG)
+fh.setLevel(logging.INFO)
 # Create format and add it to the handlers
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 fh.setFormatter(formatter)
