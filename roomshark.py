@@ -76,11 +76,11 @@ def send_reservation(username, password, start_time, room):
 
     # Find the element which decides end time
     try:
-        search_box = WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.ID, "rb-bestill"))) # New line
-        search_box.click() # Was sendkeys ue006 or something
+        search_box = WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.ID, "rb-bestill")))
+        search_box.click()
         logger.debug("Clicked submit, waiting view to change")
     except Exception:
-        logger.exception("Wrong login or room already booked.")
+        logger.debug("Wrong login or room already booked.")
         return
 
     # Clicked submit, waiting up to 5 seconds for view to change
