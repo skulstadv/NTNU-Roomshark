@@ -4,6 +4,7 @@ import sys
 import time
 import logging
 import argparse
+import requests
 import datetime
 from pyvirtualdisplay import Display
 from selenium import webdriver
@@ -67,29 +68,21 @@ def send_reservation(username, password, start_time, room):
         return
 
     # Go directly to the date two weeks from now with the correct starting time
-    date = str(datetime.date.today() + datetime.timedelta(days=15))
+    # DAYS SHOULD BE 15
+    date = str(datetime.date.today() + datetime.timedelta(days=14))
     logger.debug("Using date: " + date)
-    url = 'https://tp.uio.no/ntnu/rombestilling/?start=' + start_time + ':00&preset_date=' + date + '&roomid=' + room
+    url = 'https://tp.uio.no/ntnu/rombestilling/?start=' + start_time + ':00&duration=4:00&preset_date=' + date + '&roomid=' + room
     driver.get(url)
 
     # Find the element which decides end time
     try:
-        search_box = driver.find_element_by_id("duration") 
-        if (start_time == '8'):
-            search_box.click()
-            WebDriverWait(driver, 2)
-            search_box.send_keys("12")
-        else:
-            search_box.click()
-            WebDriverWait(driver, 2)
-            search_box.send_keys("16")
-        WebDriverWait(driver, 2)
-        search_box = driver.find_element_by_id("rb-bestill") 
-        search_box.send_keys("\ue006") 
+        search_box = WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.ID, "rb-bestill"))) # New line
+        search_box.click() # Was sendkeys ue006 or something
         logger.debug("Clicked submit, waiting view to change")
     except Exception:
         logger.exception("Wrong login or room already booked.")
         return
+
     # Clicked submit, waiting up to 5 seconds for view to change
     element = WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.ID, "name")))
     try:
@@ -104,6 +97,7 @@ def send_reservation(username, password, start_time, room):
 
 def main():
     # Get arguments
+    logger.debug(str(os.path.dirname(os.path.realpath(__file__)) + '/debug.log'))
     username = parser.__getattribute__('username')
     password = parser.__getattribute__('password')
     start_time = parser.__getattribute__('starttime')
