@@ -22,7 +22,7 @@ fh = logging.FileHandler(str(os.path.dirname(os.path.realpath(__file__)) + '/deb
 ch = logging.StreamHandler(sys.stdout)
 # Log level information, excludes debug messages
 # TODO Change to info when done debugging
-ch.setLevel(logging.DEBUG)
+ch.setLevel(logging.INFO)
 # Create format and add it to the handlers
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 fh.setFormatter(formatter)
@@ -49,7 +49,7 @@ parser = parser.parse_args()
 # @param room should be '51003.012' or '51003.013'
 def send_reservation(username, password, start_time, room):
     # Using virtualdisplay, will be running on server with no window manager 
-    logger.debug("Starting chromedriver")
+    logger.info("Starting chromedriver")
     display = Display(visible=0, size=(800,600))
     display.start()
     driver = webdriver.Chrome("/usr/lib/chromium-browser/chromedriver")
@@ -70,7 +70,7 @@ def send_reservation(username, password, start_time, room):
     # Go directly to the date two weeks from now with the correct starting time
     # DAYS SHOULD BE 15
     date = str(datetime.date.today() + datetime.timedelta(days=15))
-    logger.debug("Using date: " + date)
+    logger.info("Reserving for date: " + date)
     url = 'https://tp.uio.no/ntnu/rombestilling/?start=' + start_time + ':00&duration=4:00&preset_date=' + date + '&roomid=' + room
     driver.get(url)
 
@@ -80,7 +80,7 @@ def send_reservation(username, password, start_time, room):
         search_box.click()
         logger.debug("Clicked submit, waiting view to change")
     except Exception:
-        logger.debug("Wrong login or room already booked.")
+        logger.error("Wrong login, room already booked or no more bookings available for this user.")
         return
 
     # Clicked submit, waiting up to 5 seconds for view to change
@@ -97,7 +97,6 @@ def send_reservation(username, password, start_time, room):
 
 def main():
     # Get arguments
-    logger.debug(str(os.path.dirname(os.path.realpath(__file__)) + '/debug.log'))
     username = parser.__getattribute__('username')
     password = parser.__getattribute__('password')
     start_time = parser.__getattribute__('starttime')
