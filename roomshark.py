@@ -69,7 +69,7 @@ def send_reservation(username, password, start_time, room):
 
     # Go directly to the date two weeks from now with the correct starting time
     # DAYS SHOULD BE 15
-    date = str(datetime.date.today() + datetime.timedelta(days=14))
+    date = str(datetime.date.today() + datetime.timedelta(days=15))
     logger.debug("Using date: " + date)
     url = 'https://tp.uio.no/ntnu/rombestilling/?start=' + start_time + ':00&duration=4:00&preset_date=' + date + '&roomid=' + room
     driver.get(url)
