@@ -47,8 +47,8 @@ parser = parser.parse_args()
 # Creating chromedriver
 # Using virtualdisplay, will be running on server with no window manager 
 logger.info("Starting chromedriver")
-#display = Display(visible=0, size=(800,600))
-#display.start()
+display = Display(visible=0, size=(800,600))
+display.start()
 driver = webdriver.Chrome("/usr/lib/chromium-browser/chromedriver")
 
 
