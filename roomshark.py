@@ -40,8 +40,8 @@ parser.add_argument('username', help='Your feide username')
 parser.add_argument('password', help='Your feide password')
 parser.add_argument('--starttime', default='9',
                     help='Either 8 or 12. Booking will be for starttime + 4 hours')
-parser.add_argument('--room', default='51003.012', help='The id of the room you wish to book.' +
-                    'For S312 use 51003.012 and for S313 use 51003.013')
+parser.add_argument('--room', default='510S313', help='The id of the room you wish to book.' +
+                    'For S312 use 510S312 and for S313 use 510S313')
 parser = parser.parse_args()
 
 # Creating chromedriver
@@ -58,7 +58,7 @@ driver = webdriver.Chrome("/usr/lib/chromium-browser/chromedriver")
 def send_reservation(start_time, room):
     # Go directly to the date two weeks from now with the correct starting time
     # Days should be 14 if server has GMT+1 timezone
-    date = str(datetime.date.today() + datetime.timedelta(days=14))
+    date = str(datetime.date.today() + datetime.timedelta(days=4))
     logger.info("Reserving for date: " + date)
     url = 'https://tp.uio.no/ntnu/rombestilling/?start=' + start_time + ':00&duration=4:00&preset_date=' + date + '&roomid=' + room
     driver.get(url)
