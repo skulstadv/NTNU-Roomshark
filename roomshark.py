@@ -58,7 +58,7 @@ driver = webdriver.Chrome("/usr/lib/chromium-browser/chromedriver")
 def send_reservation(start_time, room):
     # Go directly to the date two weeks from now with the correct starting time
     # Days should be 14 if server has GMT+1 timezone
-    date = str(datetime.date.today() + datetime.timedelta(days=4))
+    date = str(datetime.date.today() + datetime.timedelta(days=14))
     logger.info("Reserving for date: " + date)
     url = 'https://tp.uio.no/ntnu/rombestilling/?start=' + start_time + ':00&duration=4:00&preset_date=' + date + '&roomid=' + room
     driver.get(url)
