@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 import os
 import sys
 import time
@@ -20,8 +20,7 @@ logger.setLevel(logging.DEBUG)
 fh = logging.FileHandler(str(os.path.dirname(os.path.realpath(__file__)) + '/debug.log'))
 # Create console handler with a higher log level
 ch = logging.StreamHandler(sys.stdout)
-# Log level information, excludes debug messages
-# TODO Change to info when done debugging
+# Log level information, debug messages visible in file console handler
 ch.setLevel(logging.DEBUG)
 fh.setLevel(logging.INFO)
 # Create format and add it to the handlers
@@ -45,7 +44,7 @@ parser.add_argument('--room', default='510S313', help='The id of the room you wi
 parser = parser.parse_args()
 
 # Creating chromedriver
-# Using virtualdisplay, will be running on server with no window manager 
+# Using virtualdisplay, will be running on server with no window manager
 logger.info("Starting chromedriver")
 display = Display(visible=0, size=(800,600))
 display.start()
@@ -54,7 +53,7 @@ driver = webdriver.Chrome("/usr/lib/chromium-browser/chromedriver")
 
 # Log in to feide and send reservation
 # @param start_time should be either 8 or 12
-# @param room should be '51003.012' or '51003.013'
+# @param room should be '510S312' or '510S313'
 def send_reservation(start_time, room):
     # Go directly to the date two weeks from now with the correct starting time
     # Days should be 14 if server has GMT+1 timezone
@@ -75,7 +74,7 @@ def send_reservation(start_time, room):
     # Clicked submit, waiting up to 5 seconds for view to change
     element = WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.ID, "name")))
     try:
-        element.send_keys("\ue004\ue004\ue004\ue006") 
+        element.send_keys("\ue004\ue004\ue004\ue006")
         logger.debug("Sending confirmation")
     except Exception:
         logger.exception("Selenium couldnt find confirmation button")
@@ -85,16 +84,16 @@ def send_reservation(start_time, room):
 
 # Start chromedriver
 def login(username, password):
-    driver.get("https://idp.feide.no/simplesaml/module.php/feide/login.php?asLen=241&AuthState=_4b555877341923271e48c51b9f56db91a63873a9a8%3Ahttps%3A%2F%2Fidp.feide.no%2Fsimplesaml%2Fsaml2%2Fidp%2FSSOService.php%3Fspentityid%3Dhttps%253A%252F%252Flogin.paas2.uninett.no%252Ffeide-feide-kp%252Fmetadata%26cookieTime%3D1520351802%26RelayState%3Dhttps%253A%252F%252Fkunde.feide.no%252F") 
+    driver.get("https://idp.feide.no/simplesaml/module.php/feide/login.php?asLen=241&AuthState=_4b555877341923271e48c51b9f56db91a63873a9a8%3Ahttps%3A%2F%2Fidp.feide.no%2Fsimplesaml%2Fsaml2%2Fidp%2FSSOService.php%3Fspentityid%3Dhttps%253A%252F%252Flogin.paas2.uninett.no%252Ffeide-feide-kp%252Fmetadata%26cookieTime%3D1520351802%26RelayState%3Dhttps%253A%252F%252Fkunde.feide.no%252F")
     logger.debug("Logging in to feide")
     try:
-        search_box = driver.find_element_by_id("org_selector-selectized") 
-        search_box.send_keys("NTNU\ue006") 
-        search_box = driver.find_element_by_id("username") 
-        search_box.send_keys(username) 
-        search_box = driver.find_element_by_id("password") 
-        search_box.send_keys(password) 
-        search_box.submit() 
+        search_box = driver.find_element_by_id("org_selector-selectized")
+        search_box.send_keys("NTNU\ue006")
+        search_box = driver.find_element_by_id("username")
+        search_box.send_keys(username)
+        search_box = driver.find_element_by_id("password")
+        search_box.send_keys(password)
+        search_box.submit()
     except Exception:
         logger.exception("Couldnt select NTNU when logging in to feide")
         return
@@ -111,15 +110,15 @@ def main():
     login(username, password)
     # Reservation for 9 - 13
     if (not send_reservation('9', room)):
-        # If the reservation doesnt go through just try to book room 313 instead
+        # If the reservation doesnt go through just try to book room 312 instead
         logger.debug("Room booked it seems, trying S313")
-        send_reservation('9', '51003.013')
+        send_reservation('9', '510S312')
     # Reservation for 13 - 17
     if (not send_reservation('13', room)):
-        # If the reservation doesnt go through just try to book room 313 instead
+        # If the reservation doesnt go through just try to book room 312 instead
         logger.debug("Room booked it seems, trying S313")
-        send_reservation('13', '51003.013')
-    driver.quit() 
+        send_reservation('13', '510S312')
+    driver.quit()
 
 
 if __name__ == "__main__":
