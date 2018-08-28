@@ -48,7 +48,10 @@ parser = parser.parse_args()
 logger.info("Starting chromedriver")
 display = Display(visible=0, size=(800,600))
 display.start()
-driver = webdriver.Chrome("/usr/lib/chromium-browser/chromedriver")
+try:
+    driver = webdriver.Chrome("/usr/lib/chromium-browser/chromedriver")
+except Exception:
+    driver = webdriver.Chrome("/usr/lib/chromium-browser/chromedriver")
 
 
 # Log in to feide and send reservation
@@ -111,12 +114,12 @@ def main():
     # Reservation for 9 - 13
     if (not send_reservation('9', room)):
         # If the reservation doesnt go through just try to book room 312 instead
-        logger.debug("Room booked it seems, trying S313")
+        logger.debug("Room booked it seems, trying S312")
         send_reservation('9', '510S312')
     # Reservation for 13 - 17
     if (not send_reservation('13', room)):
         # If the reservation doesnt go through just try to book room 312 instead
-        logger.debug("Room booked it seems, trying S313")
+        logger.debug("Room booked it seems, trying S312")
         send_reservation('13', '510S312')
     driver.quit()
 
