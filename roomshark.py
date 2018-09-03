@@ -46,13 +46,16 @@ parser = parser.parse_args()
 # Creating chromedriver
 # Using virtualdisplay, will be running on server with no window manager
 logger.info("Starting chromedriver")
-display = Display(visible=0, size=(800,600))
+display = Display(visible=1, size=(800,600))
 display.start()
-try:
-    driver = webdriver.Chrome("/usr/lib/chromium-browser/chromedriver")
-except Exception:
-    driver = webdriver.Chrome("/usr/lib/chromium-browser/chromedriver")
-
+while True:
+    try:
+        driver = webdriver.Chrome("/usr/lib/chromium-browser/chromedriver")
+    except Exception:
+        logger.error("Connection to chromedriver dropped")
+        driver = webdriver.Chrome("/usr/lib/chromium-browser/chromedriver")
+        continue
+    break
 
 # Log in to feide and send reservation
 # @param start_time should be either 8 or 12
@@ -62,6 +65,7 @@ def send_reservation(start_time, room):
     # Days should be 14 if server has GMT+1 timezone
     date = str(datetime.date.today() + datetime.timedelta(days=14))
     logger.info("Reserving for date: " + date)
+    logger.info("With start time: " + start_time)
     url = 'https://tp.uio.no/ntnu/rombestilling/?start=' + start_time + ':00&duration=4:00&preset_date=' + date + '&roomid=' + room
     driver.get(url)
 
@@ -107,21 +111,30 @@ def main():
     # Get arguments
     username = parser.__getattribute__('username')
     password = parser.__getattribute__('password')
-    start_time = parser.__getattribute__('starttime')
+    start_time = int(parser.__getattribute__('starttime'))
     room = parser.__getattribute__('room')
     # Get cookie
     login(username, password)
-    # Reservation for 9 - 13
-    if (not send_reservation('9', room)):
-        # If the reservation doesnt go through just try to book room 312 instead
-        logger.debug("Room booked it seems, trying S312")
-        send_reservation('9', '510S312')
-    # Reservation for 13 - 17
-    if (not send_reservation('13', room)):
-        # If the reservation doesnt go through just try to book room 312 instead
-        logger.debug("Room booked it seems, trying S312")
-        send_reservation('13', '510S312')
+    # If reservation starts at 13:00 or earlier reserver for whole day
+    if (start_time <= 13):
+        # First 4 hr reservation
+        if (not send_reservation(str(start_time), room)):
+            # If the reservation doesnt go through just try to book room 312 instead
+            logger.debug("Room booked it seems, trying S312")
+            send_reservation(str(start_time), '510S312')
+        # Second 4 hr reservation
+        if (not send_reservation(str(start_time + 4), room)):
+            # If the reservation doesnt go through just try to book room 312 instead
+            logger.debug("Room booked it seems, trying S312")
+            send_reservation(str(start_time + 4), '510S312')
+    else:
+        # First 4 hr reservation
+        if (not send_reservation(str(start_time), room)):
+            # If the reservation doesnt go through just try to book room 312 instead
+            logger.debug("Room booked it seems, trying S312")
+            send_reservation(str(start_time), '510S312')
     driver.quit()
+    display.sendstop()
 
 
 if __name__ == "__main__":
