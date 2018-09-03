@@ -116,7 +116,7 @@ def main():
     # Get cookie
     login(username, password)
     # If reservation starts at 13:00 or earlier reserver for whole day
-    if (start_time <= 13):
+    if (start_time < 12):
         # First 4 hr reservation
         if (not send_reservation(str(start_time), room)):
             # If the reservation doesnt go through just try to book room 312 instead
