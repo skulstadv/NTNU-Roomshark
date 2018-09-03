@@ -53,7 +53,6 @@ while True:
         driver = webdriver.Chrome("/usr/lib/chromium-browser/chromedriver")
     except Exception:
         logger.error("Connection to chromedriver dropped")
-        driver = webdriver.Chrome("/usr/lib/chromium-browser/chromedriver")
         continue
     break
 
