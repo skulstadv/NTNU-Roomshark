@@ -46,7 +46,7 @@ parser = parser.parse_args()
 # Creating chromedriver
 # Using virtualdisplay, will be running on server with no window manager
 logger.info("Starting chromedriver")
-display = Display(visible=1, size=(800,600))
+display = Display(visible=0, size=(800,600))
 display.start()
 while True:
     try:
