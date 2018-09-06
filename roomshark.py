@@ -114,24 +114,11 @@ def main():
     room = parser.__getattribute__('room')
     # Get cookie
     login(username, password)
-    # If reservation starts at 13:00 or earlier reserver for whole day
-    if (start_time < 12):
-        # First 4 hr reservation
-        if (not send_reservation(str(start_time), room)):
-            # If the reservation doesnt go through just try to book room 312 instead
-            logger.debug("Room booked it seems, trying S312")
-            send_reservation(str(start_time), '510S312')
-        # Second 4 hr reservation
-        if (not send_reservation(str(start_time + 4), room)):
-            # If the reservation doesnt go through just try to book room 312 instead
-            logger.debug("Room booked it seems, trying S312")
-            send_reservation(str(start_time + 4), '510S312')
-    else:
-        # First 4 hr reservation
-        if (not send_reservation(str(start_time), room)):
-            # If the reservation doesnt go through just try to book room 312 instead
-            logger.debug("Room booked it seems, trying S312")
-            send_reservation(str(start_time), '510S312')
+    # Send reservation for the default 4 hrs
+    if (not send_reservation(str(start_time), room)):
+        # If the reservation doesnt go through just try to book room 312 instead
+        logger.debug("Room booked it seems, trying S312")
+        send_reservation(str(start_time), '510S312')
     driver.quit()
     display.sendstop()
 
