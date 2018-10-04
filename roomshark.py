@@ -32,11 +32,12 @@ logger.addHandler(fh)
 logger.addHandler(ch)
 
 # Argument parsing
-parser = argparse.ArgumentParser(description='Room reservation for NTNU',
-                                 formatter_class=argparse.RawDescriptionHelpFormatter,
-                                 usage='roomshark.py USERNAME PASSWORD [--starttime {8|12}] [--room roomID]')
+parser = argparse.ArgumentParser(description='Room reservation for NTNU', \
+                                 formatter_class=argparse.RawDescriptionHelpFormatter, usage='roomshark.py \
+                                 USERNAME PASSWORD [--starttime {8|12}] [--room roomID] [--duration {4|8}]')
 parser.add_argument('username', help='Your feide username')
 parser.add_argument('password', help='Your feide password')
+parser.add_argument('--duration', default='4', help='Duration of reservation in hours')
 parser.add_argument('--starttime', default='9',
                     help='Either 8 or 12. Booking will be for starttime + 4 hours')
 parser.add_argument('--room', default='510S313', help='The id of the room you wish to book.' +
@@ -104,14 +105,13 @@ def login(username, password):
         logger.exception("Couldnt select NTNU when logging in to feide")
         return
 
-
-
 def main():
     # Get arguments
     username = parser.__getattribute__('username')
     password = parser.__getattribute__('password')
     start_time = int(parser.__getattribute__('starttime'))
     room = parser.__getattribute__('room')
+    duration = int(parser.__getattribute__('duration'))
     # Get cookie
     login(username, password)
     # Send reservation for the default 4 hrs
@@ -119,9 +119,15 @@ def main():
         # If the reservation doesnt go through just try to book room 312 instead
         logger.debug("Room booked it seems, trying S312")
         send_reservation(str(start_time), '510S312')
+    # Check duration, if over 4 hours make two reservations
+    if (duration > 4):
+        if (not send_reservation(str(start_time + 4), room)):
+            # If the reservation doesnt go through just try to book room 312 instead
+            logger.debug("Room booked it seems, trying S312")
+            send_reservation(str(start_time + 4), '510S312')
+    # Close the display driver when done
     driver.quit()
     display.sendstop()
 
-
 if __name__ == "__main__":
-        main()
+    main()
